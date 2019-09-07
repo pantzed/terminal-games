@@ -14,26 +14,48 @@
 const rl = require('readline');
 const clear = require('clear');
 
-let DUCK_POS = 7;
-let PREV_DUCK_POS = 7;
+const q = [1, 2, 3, '*', 4, 5, 6 , 7, 8, 9];
+let queue = [
+  [1, 2, 3, '@', 4, 5, 6 , 7, 8, 9],
+  [1, 2, 3, '@', 4, 5, 6 , 7, 8, 9],
+  [1, 2, 3, '*', 4, 5, 6 , 7, 8, 9],
+  [1, 2, 3, '@', 4, 5, 6 , 7, 8, 9],
+  [1, 2, 3, '@', 4, 5, 6 , 7, 8, 9],
+]
 
-let GAME_FRAME = [
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*',' ','*','*'],
-  ['@','@','@','@','@','@','@','@','@','@','@','@','@',' ',' ','@'],
-  ['1','2','3','4','5','6','7','8','9','0','1','2',' ',' ',' ',' '],
-  [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-  [' ','🦆',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-  [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
-  ['1','2','3','4',' ','6','7','8','9','0',' ','2',' ','4',' ','6'],
-  ['@','@','@','@','@','@','@','@','@','@','@','@',' ','@','@','@'],
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
-  ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*']
-];
-let FRAME_Q = [GAME_FRAME];
+let currPos = 3;
+let prevPos = 3;
+let hold = 4;
+
+const run = () => {
+  q.splice(currPos, 1);
+  q.push(q.shift());
+  q.splice(currPos, 0, '*');
+  printFrame();
+}
+
+const swapRight = () => {
+  hold = q[currPos + 1];
+  q[currPos + 1] = '*';
+  q[currPos] = hold;
+  printFrame();
+}
+
+const swapLeft = () => {
+  hold = q[currPos - 1];
+  q[currPos - 1] = '*';
+  q[currPos] = hold;
+  printFrame();
+}
+
+const printFrame = () => {
+  clear();
+  console.log('');
+  console.log(q.join(''));
+  console.log('current ' + currPos);
+}
+
+setInterval(run, 250);
 
 process.stdin.setRawMode(true);
 
@@ -41,93 +63,112 @@ rl.emitKeypressEvents(process.stdin);
 
 process.stdin.on('keypress', (str, key) => {
   switch(key.name) {
-    case 'q': process.exit(0);
-    case 'up': flyDuck();
+    case 'q': process.exit(0); return;
+    // case 'up': flyDuck(); return;
+    // case 'down': crashDuck(); return;
+      case 'right': swapRight(); currPos++; return;
+      case 'left': swapLeft(); currPos--; return;
     default: return;
   }
 });
 
-const flyDuck = () => {
-  PREV_DUCK_POS = DUCK_POS;
-  if (DUCK_POS - 1 < 0) {
-    DUCK_POS = 0;
-  } else {
-    PREV_DUCK_POS = DUCK_POS;
-    DUCK_POS--;
-  }
-  hidePrevDuck();
-  placeNextDuck();
-}
+// let DUCK_POS = 7;
+// let PREV_DUCK_POS = 7;
 
-const crashDuck = () => {
-  PREV_DUCK_POS = DUCK_POS;
-  if (DUCK_POS + 1 > 13) {
-    DUCK_POS = 13;
-  } else {
-    PREV_DUCK_POS = DUCK_POS;
-    DUCK_POS++;
-  }
-  hidePrevDuck();
-  placeNextDuck();
-}
+// let GAME_FRAME = [
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*',' ','*','*'],
+//   ['@','@','@','@','@','@','@','@','@','@','@','@','@',' ',' ','@'],
+//   ['1','2','3','4','5','6','7','8','9','0','1','2',' ',' ',' ',' '],
+//   [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+//   [' ',' ',' ','🦆',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+//   [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '],
+//   ['1','2','3','4',' ','6','7','8','9','0',' ','2',' ','4',' ','6'],
+//   ['@','@','@','@','@','@','@','@','@','@','@','@',' ','@','@','@'],
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*'],
+//   ['*','*','*','*','*','*','*','*','*','*','*','*','*','*','*','*']
+// ];
 
-const newColumn = () => {
-  const opts = [
-    ['*','*','*','*','*','*',' '],
-    ['*','*','*','*',' ',' ',' '],
-    ['*','*','*',' ',' ',' ',' '],
-    ['*','*',' ',' ',' ',' ',' '],
-    ['*',' ',' ',' ',' ',' ',' '],
-    ['*',' ',' ',' ',' ',' ',' '],
-  ]
-  let colOpt = Math.round(Math.random() * 5);
-  return opts[colOpt];
-}
+// let FRAME_Q = new Array;
+// FRAME_Q.push(GAME_FRAME);
 
-const placeNextDuck = () => {
-  GAME_FRAME[DUCK_POS][1] = '🦆';
-  printNewDuckFrame();
-}
+// const flyDuck = () => {
+//   PREV_DUCK_POS = DUCK_POS;
+//   if (DUCK_POS - 1 < 1) {
+//     DUCK_POS = 1;
+//   } else {
+//     DUCK_POS--;
+//   }
+//   printFrame();
+// }
 
-const hidePrevDuck = () => {
-  GAME_FRAME[PREV_DUCK_POS][1] = ' ';
-}
+// const crashDuck = () => {
+//   PREV_DUCK_POS = DUCK_POS;
+//   if (DUCK_POS + 1 > 13) {
+//     DUCK_POS = 13;
+//   } else {
+//     PREV_DUCK_POS = DUCK_POS;
+//     DUCK_POS++;
+//   }
+//   printFrame();
+// }
 
-const printNewDuckFrame = () => {
-  clear();
-  GAME_FRAME.forEach((line) => {
-    console.log(...line);
-  });
-}
+// const newColumn = () => {
+//   let opts = [
+//     ['*','*','*','*','*','*',' '],
+//     ['*','*','*','*',' ',' ',' '],
+//     ['*','*','*',' ',' ',' ',' '],
+//     ['*','*',' ',' ',' ',' ',' '],
+//     ['*',' ',' ',' ',' ',' ',' '],
+//     ['*',' ',' ',' ',' ',' ',' '],
+//   ]
+//   let colOpt = opts[Math.round(Math.random() * 5)];
+//   return colOpt;
+// }
 
-const incrementGameFrame = () => {
-  let GAME_FRAME = FRAME_Q.shift();
-  GAME_FRAME.forEach((line) => {
-    console.log(...line);
-  });
-}
+// const placeNextDuck = () => {
+//   FRAME_Q[0][DUCK_POS][4] = '🦆';
+// }
 
-const buildNextFrame = () => {
-  let nextTop = newColumn();
-  let nextBottom = newColumn();
-  clear();
-  let nextFrame = GAME_FRAME.map((row, index) => {
-    if (index === 7) {
-      return row;
-    } else {
-      row.shift();
-      if (index < 7) {
-        return row.push(nextTop.shift()); 
-      } else {
-        return row.push(nextBottom.pop());
-      }
-    }
-  });
-  FRAME_Q.push(nextFrame);
-  console.log('DEBUG: ', nextFrame);
-}
+// const hidePrevDuck = () => {
+//   FRAME_Q[0][PREV_DUCK_POS][4] = ' ';
+// }
 
-setInterval(incrementGameFrame, 250);
-setInterval(buildNextFrame, 100);
-setInterval(crashDuck, 500);
-// setInterval(clearFrame, 999)
+// const buildNextFrame = () => {
+//   let newTopCol = newColumn();
+//   let newBottomCol = newColumn();
+//   let frame = Array.from(FRAME_Q[FRAME_Q.length-1]);
+//   frame.forEach((line, index) => {
+//     line.shift();
+//     if (index <= 6) {
+//       line.push(newTopCol.shift());
+//     } else if (index === 7) {
+//       line.push(' ');
+//     } else {
+//       line.push(newBottomCol.pop());
+//     }
+//   });
+//   FRAME_Q.push(frame);
+// }
+
+// const printFrame = () => {
+//   hidePrevDuck();
+//   placeNextDuck();
+//   let frameToPrint = FRAME_Q[0];
+//   clear();
+//   frameToPrint.forEach((line) => {
+//     console.log(...line);
+//   });
+// }
+
+// const clearFrame = () => {
+//   FRAME_Q.shift();
+//   printFrame();
+// }
+
+// setInterval(buildNextFrame, 50);
+// setInterval(clearFrame, 500);
+
