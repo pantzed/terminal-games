@@ -13,6 +13,7 @@
 
 const rl = require('readline');
 const clear = require('clear');
+const fs = require('fs');
 
 let frame = [
   ['☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️'],
@@ -32,22 +33,33 @@ let frame = [
   ['⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️'],
 ];
 
+let frameQ = [frame];
+
 let currX = 3;
 let prevX = 3;
 let currY = 7;
-let prevY = 7;
 let frameHeight = 15;
 let frameLength = 30;
 let score = 0;
+let prevBottom = 2;
+let FLOAT = true;
 
 const collision =() => {
   if (frame[(currY)][currX+1] !== ' ' && frame[(currY)][currX+1] !== '🦆'){
-    console.log('Fail!');
+    frame[currY][currX] = '💥';
+    clear();
+    console.log('');
+    frame.forEach((line) => {
+      console.log(line.join(''));
+    });
+    console.log('Murderer.');
+    console.log('Final Score: ', score);
     process.exit(1);
   }
 }
 
 const moveUp = () => {
+  FLOAT = true
   let prevY = currY;
   if (currY - 1 >= 0){
     currY--;
@@ -56,7 +68,7 @@ const moveUp = () => {
   }
   frame[currY][currX] = '🦆';
   frame[prevY][currX] = ' ';
-  printFrame();
+  printFrame('up');
 }
 
 const moveDown = () => {
@@ -68,21 +80,63 @@ const moveDown = () => {
   }
   frame[currY][currX] = '🦆';
   frame[prevY][currX] = ' ';
-  printFrame();
+  printFrame('down');
+}
+
+const coinFlip = () => {
+  return Math.round(Math.random()) === 0 ? true : false;
+}
+
+const randomBottom = () => {
+  let min = 1;
+  let max = Math.floor(frameHeight/2) - 1;
+  let count = prevBottom;
+  let nextCount = coinFlip() === true ? count + 1 : count - 1;
+  if (nextCount <= min) {
+    nextCount = min;
+  }
+  else if (nextCount >= max) {
+    nextCount = max;
+  }
+  prevBottom = nextCount;
+  return nextCount;
+}
+
+const randomTop = () => {
+  let min = 1;
+  let max = Math.floor(frameHeight/2) - 1;
+  let count = prevBottom;
+  let nextCount = coinFlip() === true ? count + 1 : count - 1;
+  if (nextCount <= min) {
+    nextCount = min;
+  }
+  else if (nextCount >= max) {
+    nextCount = max;
+  }
+  prevBottom = nextCount;
+  return nextCount;
 }
 
 const run = () => {
-    moveDown();
+  let bottom = randomBottom();
+  let top = randomTop();
   let nextFrame = frame.map((el, index) => {
     if (index === currY) {
       el.splice(currX, 1);
-      el.push(el.shift());
+      el.shift();
       el.splice(currX, 0, '🦆');
-      return el;
+      el.push(' ');
+    } else if (index < frameHeight - 1 && index >= frameHeight - bottom) {
+      el.shift();
+      el.push('⛰️');
+    } else if (index >= 0 && index <= top) {
+      el.shift();
+      el.push('☁️');
     } else {
-      el.push(el.shift());
-      return el;
+      el.shift();
+      el.push(' ');
     }
+    return el;
   });
   collision();
   frame = nextFrame;
@@ -114,7 +168,8 @@ const printFrame = () => {
   console.log('Score: ' + score);
 }
 
-setInterval(run, 250);
+setInterval(run, 100);
+setInterval(moveDown, 500);
 
 process.stdin.setRawMode(true);
 

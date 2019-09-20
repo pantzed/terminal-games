@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "clear": "^0.1.0"
+    "clear": "^0.1.0",
+    "fs": "0.0.1-security"
   }
 }
