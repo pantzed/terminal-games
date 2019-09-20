@@ -32,7 +32,7 @@ let currY = 4;
 let prevY = 4;
 
 const collision =() => {
-  if (frame[(currY)][currX+1] !== ' '){
+  if (frame[(currY)][currX+1] !== ' ' && frame[(currY)][currX+1] !== '*'){
     console.log('Fail!');
     process.exit(1);
   }
