@@ -25,26 +25,30 @@ let FALL_SPEED = gameConfig.game.difficulty[GAME_DIFFICULTY].fallSpeed;
 
 const createInitialFrame = (height, width) => {
   let initialFrame = [];
-  for(let i=height; i<=height; i++) {
+  for(let i=0; i<=height; i++) {
     let row = [];
     let el = ' ';
     if (i === 0) {
       el = SKY;
-    } else if (i === FRAME_HEIGHT) {
+    } else if (i === height) {
       el = GROUND;
     }
-    for (let j=width; j<width; j++) {
-      row.push(el);
+    for (let j=0; j<width; j++) {
+      if (i === Y && j === X) {
+        row.push(DUCK);
+      } else {
+        row.push(el);
+      }
     }
+    initialFrame.push(row);
   }
-  initialFrame[Y][X] = DUCK;
   return initialFrame;
 }
 
 let frame = createInitialFrame(FRAME_HEIGHT, FRAME_LENGTH);
 
 const collision = () => {
-  if (frame[(Y)][X+1] !== ' ' && frame[(Y)][X+1] !== '🦆'){
+  if (frame[Y][X+1] !== ' ' && frame[Y][X+1] !== '🦆'){
     frame[Y][X] = '💥';
     clear();
     console.log('');
@@ -52,7 +56,7 @@ const collision = () => {
       console.log(line.join(''));
     });
     console.log('Murderer.');
-    console.log('Final score: ', SCORE);
+    console.log('Final score:', SCORE);
     process.exit(1);
   }
 }
