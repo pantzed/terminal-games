@@ -1,0 +1,46 @@
+{
+  "environment": {
+    "duck": "🦆",
+    "sky": "☁️",
+    "ground": "⛰️",
+    "frameHeight": 15,
+    "frameLength": 30,
+    "initialSpace": {
+      "minIndex": 1,
+      "maxIndex": 13
+    }
+  },
+  "game": {
+    "start": {
+      "position": {
+        "x": 4,
+        "y": 7
+      }
+    },
+    "difficulty": {
+      "easy": {
+        "frameRate": 500,
+        "fallSpeed": 750
+      },
+      "medium": {
+        "frameRate": 200,
+        "fallSpeed": 300
+      },
+      "hard": {
+        "frameRate": 100,
+        "fallSpeed": 150
+      },
+      "professional": {
+        "frameRate": 50,
+        "fallSpeed": 75
+      }
+    },
+    "score": {
+      "save": {
+        "enabled": false,
+        "count": 5,
+        "location": "./high-scores.txt"
+      }
+    }
+  }
+}

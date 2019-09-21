@@ -14,6 +14,7 @@
 const rl = require('readline');
 const clear = require('clear');
 const fs = require('fs');
+const gameConfig = require('./config');
 
 let frame = [
   ['☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️', '☁️'],
@@ -33,32 +34,24 @@ let frame = [
   ['⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️', '⛰️'],
 ];
 
-let frameQ = [frame];
-
-let currX = 3;
-let prevX = 3;
-let currY = 7;
-let frameHeight = 15;
-let frameLength = 30;
+let DUCK = gameConfig.environment.duck;
+let X = gameConfig.game.start.position.x;
+let PREV_X = gameConfig.game.start.position.x;
+let Y = gameConfig.game.start.position.y;
+let FRAME_HEIGHT = gameConfig.environment.frameHeight;
+let frameLength = gameConfig.environment.frameLength;
 let SCORE = 0;
-let PREV_BLANK_MAX = 12;
-let PREV_BLANK_MIN = 1;
-let GAME_SPEED = 100;
-let GAME_DIFFICULTY = {
-  easy: 300,
-  medium: 100,
-  hard: 50
-}
+let PREV_BLANK_MAX = gameConfig.environment.initialSpace.maxIndex;
+let PREV_BLANK_MIN = gameConfig.environment.initialSpace.minIndex;
 
-const accelerateFR = async() => {
-  if (SCORE >= 50) {
-    
-  }
-}
+let GAME_DIFFICULTY = 'medium';
+let GAME_SPEED = gameConfig.game.difficulty[GAME_DIFFICULTY].frameRate;
+let FALL_SPEED = gameConfig.game.difficulty[GAME_DIFFICULTY].fallSpeed;
 
-const collision =() => {
-  if (frame[(currY)][currX+1] !== ' ' && frame[(currY)][currX+1] !== '🦆'){
-    frame[currY][currX] = '💥';
+
+const collision = () => {
+  if (frame[(Y)][X+1] !== ' ' && frame[(Y)][X+1] !== '🦆'){
+    frame[Y][X] = '💥';
     clear();
     console.log('');
     frame.forEach((line) => {
@@ -71,26 +64,26 @@ const collision =() => {
 }
 
 const moveUp = () => {
-  let prevY = currY;
-  if (currY - 1 >= 0){
-    currY--;
+  let prevY = Y;
+  if (Y - 1 >= 0){
+    Y--;
   } else {
     return;
   }
-  frame[currY][currX] = '🦆';
-  frame[prevY][currX] = ' ';
+  frame[Y][X] = '🦆';
+  frame[prevY][X] = ' ';
   printFrame('up');
 }
 
 const moveDown = () => {
-  let prevY = currY;
-  if (currY < frameHeight) {
-    currY++;
+  let prevY = Y;
+  if (Y < FRAME_HEIGHT) {
+    Y++;
   } else {
     return;
   }
-  frame[currY][currX] = '🦆';
-  frame[prevY][currX] = ' ';
+  frame[Y][X] = '🦆';
+  frame[prevY][X] = ' ';
   printFrame('down');
 }
 
@@ -104,39 +97,14 @@ const getRandom = () => {
   }
 }
 
-// const nextEnv = () => {
-//   let total = frameHeight;
-//   let nextTop = (coinFlip() === 1 ? 1 : -1) + PREV_TOP;
-//   if (nextTop >= total - 6) {
-//     nextTop = total - 6;
-//   }
-//   PREV_TOP = nextTop;
-//   let nextBlank = (coinFlip() === 1 ? 1 : -1) + PREV_BLANK;
-//   if ((nextBlank + nextTop) >= total - 3) {
-//     nextBlank = total - 3;
-//   }
-//   else if (nextBlank <= 5) {
-//     nextBlank = 5;
-//   }
-//   PREV_BLANK = nextBlank; 
-//   let nextBottom = total - (nextTop + nextBlank);
-//   if (nextBottom >= total) {
-//     nextBottom = total - 1;
-//   }
-//   let env = [nextTop, nextBlank, nextBottom];
-//   return env;
-// }
-
-// Blank space can grow in high 
-// Midpoint of blank space can move +/-1 or zero
 const blankHeightPos = () => {
 
   let nextBlankMin = getRandom() + PREV_BLANK_MIN;
-  if (nextBlankMin < 1) {
+  if (nextBlankMin <= 1) {
     nextBlankMin = 1;
   }
-  if (nextBlankMin > frameHeight - 5) {
-    nextBlankMin = frameHeight - 5;
+  if (nextBlankMin > FRAME_HEIGHT - 5) {
+    nextBlankMin = FRAME_HEIGHT - 5;
   }
 
   let nextBlankMax = getRandom() + PREV_BLANK_MAX;
@@ -146,9 +114,9 @@ const blankHeightPos = () => {
     nextBlankMax = nextBlankMin + 3;
   }
 
-  // check that max is never equal or greater to frameheight
-  if (nextBlankMax >= frameHeight - 2) {
-    nextBlankMax = frameHeight - 2;
+  // check that max is never equal or greater to FRAME_HEIGHT
+  if (nextBlankMax >= FRAME_HEIGHT - 2) {
+    nextBlankMax = FRAME_HEIGHT - 2;
     if (nextBlankMin + 3 >= nextBlankMax){
       nextBlankMin--;
     }
@@ -166,24 +134,24 @@ const run = () => {
   let min = nextEnv[0];
   let max = nextEnv[1];
   let nextFrame = frame.map((el, index) => {
-    if (index === currY) {
+    if (index === Y) {
       if (index >= 0 && index <= min) {
-        el.splice(currX, 1);
+        el.splice(X, 1);
         el.shift();
         el.push('☁️');
-        el.splice(currX, 0, '🦆');
+        el.splice(X, 0, '🦆');
       }
       if (index > min && index <= max) {
-        el.splice(currX, 1);
+        el.splice(X, 1);
         el.shift();
         el.push(' ');
-        el.splice(currX, 0, '🦆');
+        el.splice(X, 0, '🦆');
       }
-      if (index > max && index < frameHeight) {
-        el.splice(currX, 1);
+      if (index > max && index < FRAME_HEIGHT) {
+        el.splice(X, 1);
         el.shift();
         el.push('⛰️');
-        el.splice(currX, 0, '🦆');
+        el.splice(X, 0, '🦆');
         }
       } else {
         if (index >= 0 && index <= min) {
@@ -194,7 +162,7 @@ const run = () => {
             el.shift();
             el.push(' ');
         } 
-        if (index > max && index < frameHeight) {
+        if (index > max && index < FRAME_HEIGHT) {
           el.shift();
           el.push('⛰️');
         }
@@ -209,16 +177,16 @@ const run = () => {
 }
 
 const swapRight = () => {
-  prevX = frame[currY][currX + 1];
-  frame[currY][currX + 1] = '🦆';
-  frame[currY][currX] = prevX;
+  PREV_X = frame[Y][X + 1];
+  frame[Y][X + 1] = '🦆';
+  frame[Y][X] = PREV_X;
   printFrame();
 }
 
 const swapLeft = () => {
-  prevX = frame[currY][currX - 1];
-  frame[currY][currX - 1] = '🦆';
-  frame[currY][currX] = prevX;
+  PREV_X = frame[Y][X - 1];
+  frame[Y][X - 1] = '🦆';
+  frame[Y][X] = PREV_X;
   printFrame();
 }
 
@@ -233,7 +201,7 @@ const printFrame = () => {
 }
 
 setInterval(run, GAME_SPEED);
-setInterval(moveDown, 300);
+setInterval(moveDown, FALL_SPEED);
 
 process.stdin.setRawMode(true);
 
@@ -242,8 +210,8 @@ rl.emitKeypressEvents(process.stdin);
 process.stdin.on('keypress', (str, key) => {
   switch(key.name) {
     case 'q': process.exit(0); break;
-    case 'right': swapRight(); currX++; break;
-    case 'left': swapLeft(); currX--; break;
+    case 'right': swapRight(); X++; break;
+    case 'left': swapLeft(); X--; break;
     case 'up': moveUp(); break;
     case 'down': moveDown(); break;
     default: break;
