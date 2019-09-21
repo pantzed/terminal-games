@@ -6,8 +6,8 @@
     "frameHeight": 15,
     "frameLength": 30,
     "initialSpace": {
-      "minIndex": 1,
-      "maxIndex": 13
+      "minIndex": null,
+      "maxIndex": null
     }
   },
   "game": {
