@@ -2,15 +2,6 @@
 
 /* eslint-env node */
 
-/* Things to keep in mind...
-*   - Need to set failure bounds based on gameFrame height and elements
-*   - Observables might be a good way to update the gameframe with bird position
-*   - Rendomization of frame must happen before bird placement
-*   - Difficulty can be determined by interval rate and randomization
-*   - Columns should be created with decreasing likelihood of generating a solid
-*   - !!! Improve choppiness by queueing frames between updates
-*/
-
 const rl = require('readline');
 const clear = require('clear');
 const fs = require('fs');
