@@ -40,9 +40,21 @@ let prevX = 3;
 let currY = 7;
 let frameHeight = 15;
 let frameLength = 30;
-let score = 0;
-let prevBottom = 2;
-let FLOAT = true;
+let SCORE = 0;
+let PREV_BLANK_MAX = 12;
+let PREV_BLANK_MIN = 1;
+let GAME_SPEED = 100;
+let GAME_DIFFICULTY = {
+  easy: 300,
+  medium: 100,
+  hard: 50
+}
+
+const accelerateFR = async() => {
+  if (SCORE >= 50) {
+    
+  }
+}
 
 const collision =() => {
   if (frame[(currY)][currX+1] !== ' ' && frame[(currY)][currX+1] !== '🦆'){
@@ -53,13 +65,12 @@ const collision =() => {
       console.log(line.join(''));
     });
     console.log('Murderer.');
-    console.log('Final Score: ', score);
+    console.log('Final score: ', SCORE);
     process.exit(1);
   }
 }
 
 const moveUp = () => {
-  FLOAT = true
   let prevY = currY;
   if (currY - 1 >= 0){
     currY--;
@@ -83,65 +94,118 @@ const moveDown = () => {
   printFrame('down');
 }
 
-const coinFlip = () => {
-  return Math.round(Math.random()) === 0 ? true : false;
+const getRandom = () => {
+  let flip = Math.ceil(Math.random() * 3);
+  switch (flip) {
+    case 1: return 1;
+    case 2: return -1;
+    case 3: return 0;
+    default: break;
+  }
 }
 
-const randomBottom = () => {
-  let min = 1;
-  let max = Math.floor(frameHeight/2) - 1;
-  let count = prevBottom;
-  let nextCount = coinFlip() === true ? count + 1 : count - 1;
-  if (nextCount <= min) {
-    nextCount = min;
-  }
-  else if (nextCount >= max) {
-    nextCount = max;
-  }
-  prevBottom = nextCount;
-  return nextCount;
-}
+// const nextEnv = () => {
+//   let total = frameHeight;
+//   let nextTop = (coinFlip() === 1 ? 1 : -1) + PREV_TOP;
+//   if (nextTop >= total - 6) {
+//     nextTop = total - 6;
+//   }
+//   PREV_TOP = nextTop;
+//   let nextBlank = (coinFlip() === 1 ? 1 : -1) + PREV_BLANK;
+//   if ((nextBlank + nextTop) >= total - 3) {
+//     nextBlank = total - 3;
+//   }
+//   else if (nextBlank <= 5) {
+//     nextBlank = 5;
+//   }
+//   PREV_BLANK = nextBlank; 
+//   let nextBottom = total - (nextTop + nextBlank);
+//   if (nextBottom >= total) {
+//     nextBottom = total - 1;
+//   }
+//   let env = [nextTop, nextBlank, nextBottom];
+//   return env;
+// }
 
-const randomTop = () => {
-  let min = 1;
-  let max = Math.floor(frameHeight/2) - 1;
-  let count = prevBottom;
-  let nextCount = coinFlip() === true ? count + 1 : count - 1;
-  if (nextCount <= min) {
-    nextCount = min;
+// Blank space can grow in high 
+// Midpoint of blank space can move +/-1 or zero
+const blankHeightPos = () => {
+
+  let nextBlankMin = getRandom() + PREV_BLANK_MIN;
+  if (nextBlankMin < 1) {
+    nextBlankMin = 1;
   }
-  else if (nextCount >= max) {
-    nextCount = max;
+  if (nextBlankMin > frameHeight - 5) {
+    nextBlankMin = frameHeight - 5;
   }
-  prevBottom = nextCount;
-  return nextCount;
+
+  let nextBlankMax = getRandom() + PREV_BLANK_MAX;
+
+  //check that max is greater than min by at least 3
+  if (nextBlankMin + 3 >= nextBlankMax){
+    nextBlankMax = nextBlankMin + 3;
+  }
+
+  // check that max is never equal or greater to frameheight
+  if (nextBlankMax >= frameHeight - 2) {
+    nextBlankMax = frameHeight - 2;
+    if (nextBlankMin + 3 >= nextBlankMax){
+      nextBlankMin--;
+    }
+  }
+
+
+  PREV_BLANK_MIN = nextBlankMin;
+  PREV_BLANK_MAX = nextBlankMax;
+  
+  return [nextBlankMin, nextBlankMax];
 }
 
 const run = () => {
-  let bottom = randomBottom();
-  let top = randomTop();
+  let nextEnv = blankHeightPos();
+  let min = nextEnv[0];
+  let max = nextEnv[1];
   let nextFrame = frame.map((el, index) => {
     if (index === currY) {
-      el.splice(currX, 1);
-      el.shift();
-      el.splice(currX, 0, '🦆');
-      el.push(' ');
-    } else if (index < frameHeight - 1 && index >= frameHeight - bottom) {
-      el.shift();
-      el.push('⛰️');
-    } else if (index >= 0 && index <= top) {
-      el.shift();
-      el.push('☁️');
-    } else {
-      el.shift();
-      el.push(' ');
+      if (index >= 0 && index <= min) {
+        el.splice(currX, 1);
+        el.shift();
+        el.push('☁️');
+        el.splice(currX, 0, '🦆');
+      }
+      if (index > min && index <= max) {
+        el.splice(currX, 1);
+        el.shift();
+        el.push(' ');
+        el.splice(currX, 0, '🦆');
+      }
+      if (index > max && index < frameHeight) {
+        el.splice(currX, 1);
+        el.shift();
+        el.push('⛰️');
+        el.splice(currX, 0, '🦆');
+        }
+      } else {
+        if (index >= 0 && index <= min) {
+          el.shift();
+          el.push('☁️');
+        }
+        if (index > min && index <= max) {
+            el.shift();
+            el.push(' ');
+        } 
+        if (index > max && index < frameHeight) {
+          el.shift();
+          el.push('⛰️');
+        }
     }
     return el;
   });
   collision();
   frame = nextFrame;
   printFrame();
-  score++;
+  SCORE++;
+  // accelerateFR();
 }
 
 const swapRight = () => {
@@ -165,11 +229,11 @@ const printFrame = () => {
     console.log(line.join(''));
   });
   collision();
-  console.log('Score: ' + score);
+  console.log('score: ' + SCORE);
 }
 
-setInterval(run, 100);
-setInterval(moveDown, 500);
+setInterval(run, GAME_SPEED);
+setInterval(moveDown, 300);
 
 process.stdin.setRawMode(true);
 
@@ -185,5 +249,3 @@ process.stdin.on('keypress', (str, key) => {
     default: break;
   }
 });
-
-
