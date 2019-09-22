@@ -4,53 +4,44 @@
 
 const clear = require('clear');
 const gameConfig = require('../config.json');
-const rl = require('readline');
 
-const terminalDuck = () => {
-  
-  process.stdin.setRawMode(true);
-  process.stdin.resume();
-  rl.emitKeypressEvents(process.stdin);
-  process.stdin.on('keypress', (str, key) => {
-    switch(key.name) {
-      case 'q': process.exit(0); break;
-      case 'right': swapRight(); break;
-      case 'left': swapLeft(); break;
-      case 'up': moveUp(); break;
-      case 'down': moveDown(); break;
-      default: break;
-    }
-  });
+class TerminalDuck {
+  constructor() {
 
-  let DUCK = gameConfig.environment.duck;
-  let SKY = gameConfig.environment.sky;
-  let GROUND = gameConfig.environment.ground;
-  let X = gameConfig.game.start.position.x;
-  let PREV_X = gameConfig.game.start.position.x;
-  let Y = gameConfig.game.start.position.y;
-  let FRAME_HEIGHT = gameConfig.environment.frameHeight;
-  let FRAME_LENGTH = gameConfig.environment.frameLength;
-  let SCORE = 0;
-  let PREV_BLANK_MAX = gameConfig.environment.initialSpace.maxIndex || FRAME_HEIGHT - 1;
-  let PREV_BLANK_MIN = gameConfig.environment.initialSpace.minIndex || 1;
+    this.DUCK = gameConfig.environment.duck;
+    this.SKY = gameConfig.environment.sky;
+    this.GROUND = gameConfig.environment.ground;
+    this.X = gameConfig.game.start.position.x;
+    this.PREV_X= gameConfig.game.start.position.x;
+    this.Y = gameConfig.game.start.position.y;
+    this.FRAME_HEIGHT = gameConfig.environment.frameHeight;
+    this.FRAME_LENGTH = gameConfig.environment.frameLength;
 
-  let GAME_DIFFICULTY = 'medium';
-  let GAME_SPEED = gameConfig.game.difficulty[GAME_DIFFICULTY].frameRate;
-  let FALL_SPEED = gameConfig.game.difficulty[GAME_DIFFICULTY].fallSpeed;
+    this.PREV_BLANK_MAX = gameConfig.environment.initialSpace.maxIndex || this.FRAME_HEIGHT - 1;
+    this.PREV_BLANK_MIN = gameConfig.environment.initialSpace.minIndex || 1;
 
-  const createInitialFrame = (height, width) => {
+    this.GAME_DIFFICULTY = 'medium';
+    this.GAME_SPEED = gameConfig.game.difficulty[this.GAME_DIFFICULTY].frameRate;
+    this.FALL_SPEED = gameConfig.game.difficulty[this.GAME_DIFFICULTY].fallSpeed;
+
+    this.SCORE = 0;
+
+    this.FRAME = this.createInitialFrame(this.FRAME_HEIGHT, this.FRAME_LENGTH);
+  }
+
+  createInitialFrame(height, width) {
     let initialFrame = [];
     for(let i=0; i<=height; i++) {
       let row = [];
       let el = ' ';
       if (i === 0) {
-        el = SKY;
+        el = this.SKY;
       } else if (i === height) {
-        el = GROUND;
+        el = this.GROUND;
       }
       for (let j=0; j<width; j++) {
-        if (i === Y && j === X) {
-          row.push(DUCK);
+        if (i === this.Y && j === this.X) {
+          row.push(this.DUCK);
         } else {
           row.push(el);
         }
@@ -60,47 +51,70 @@ const terminalDuck = () => {
     return initialFrame;
   }
 
-  let frame = createInitialFrame(FRAME_HEIGHT, FRAME_LENGTH);
+  blankHeightPos() {
+    let nextBlankMin = this.getRandom() + this.PREV_BLANK_MIN;
+    if (nextBlankMin <= 1) {
+      nextBlankMin = 1;
+    }
+    if (nextBlankMin > this.FRAME_HEIGHT - 5) {
+      nextBlankMin = this.FRAME_HEIGHT - 5;
+    }
+    let nextBlankMax = this.getRandom() + this.PREV_BLANK_MAX;
+    //check that max is greater than min by at least 3
+    if (nextBlankMin + 3 >= nextBlankMax){
+      nextBlankMax = nextBlankMin + 3;
+    }
+    // check that max is never equal or greater to this.FRAME_HEIGHT
+    if (nextBlankMax >= this.FRAME_HEIGHT - 2) {
+      nextBlankMax = this.FRAME_HEIGHT - 2;
+      if (nextBlankMin + 3 >= nextBlankMax){
+        nextBlankMin--;
+      }
+    }
+    this.PREV_BLANK_MIN = nextBlankMin;
+    this.PREV_BLANK_MAX = nextBlankMax;
+    return [nextBlankMin, nextBlankMax];
+  }
 
-  const collision = () => {
-    if (frame[Y][X+1] !== ' ' && frame[Y][X+1] !== '🦆'){
-      frame[Y][X] = '💥';
+  collision() {
+    if (this.FRAME[this.Y][this.X+1] !== ' ' && this.FRAME[this.Y][this.X+1] !== '🦆'){
+      this.FRAME[this.Y][this.X] = '💥';
       clear();
       console.log('');
-      frame.forEach((line) => {
+      this.FRAME.forEach((line) => {
         console.log(line.join(''));
       });
       console.log('Murderer.');
-      console.log('Final score:', SCORE);
+      console.log('Final score:', this.SCORE);
       process.exit(1);
     }
   }
 
-  const moveUp = () => {
-    let prevY = Y;
-    if (Y - 1 >= 0){
-      Y--;
+  moveUp() {
+    let prevY = this.Y;
+    if (this.Y - 1 >= 0){
+      this.Y--;
     } else {
       return;
     }
-    frame[Y][X] = '🦆';
-    frame[prevY][X] = ' ';
-    printFrame('up');
+    this.FRAME[this.Y][this.X] = '🦆';
+    this.FRAME[prevY][this.X] = ' ';
+    this.printFrame('up');
   }
 
-  const moveDown = () => {
-    let prevY = Y;
-    if (Y < FRAME_HEIGHT) {
-      Y++;
+  moveDown() {
+    let prevY = this.Y;
+    if (this.Y < this.FRAME_HEIGHT) {
+      this.Y++;
     } else {
       return;
     }
-    frame[Y][X] = '🦆';
-    frame[prevY][X] = ' ';
-    printFrame('down');
+    this.FRAME[this.Y][this.X] = '🦆';
+    this.FRAME[prevY][this.X] = ' ';
+    this.printFrame('down');
   }
 
-  const getRandom = () => {
+  getRandom() {
     let flip = Math.ceil(Math.random() * 3);
     switch (flip) {
       case 1: return 1;
@@ -110,61 +124,29 @@ const terminalDuck = () => {
     }
   }
 
-  const blankHeightPos = () => {
-
-    let nextBlankMin = getRandom() + PREV_BLANK_MIN;
-    if (nextBlankMin <= 1) {
-      nextBlankMin = 1;
-    }
-    if (nextBlankMin > FRAME_HEIGHT - 5) {
-      nextBlankMin = FRAME_HEIGHT - 5;
-    }
-
-    let nextBlankMax = getRandom() + PREV_BLANK_MAX;
-
-    //check that max is greater than min by at least 3
-    if (nextBlankMin + 3 >= nextBlankMax){
-      nextBlankMax = nextBlankMin + 3;
-    }
-
-    // check that max is never equal or greater to FRAME_HEIGHT
-    if (nextBlankMax >= FRAME_HEIGHT - 2) {
-      nextBlankMax = FRAME_HEIGHT - 2;
-      if (nextBlankMin + 3 >= nextBlankMax){
-        nextBlankMin--;
-      }
-    }
-
-
-    PREV_BLANK_MIN = nextBlankMin;
-    PREV_BLANK_MAX = nextBlankMax;
-    
-    return [nextBlankMin, nextBlankMax];
-  }
-
-  const run = () => {
-    let nextEnv = blankHeightPos();
+  run() {
+    let nextEnv = this.blankHeightPos();
     let min = nextEnv[0];
     let max = nextEnv[1];
-    let nextFrame = frame.map((el, index) => {
-      if (index === Y) {
+    let nextFrame = this.FRAME.map((el, index) => {
+      if (index === this.Y) {
         if (index >= 0 && index <= min) {
-          el.splice(X, 1);
+          el.splice(this.X, 1);
           el.shift();
           el.push('☁️');
-          el.splice(X, 0, '🦆');
+          el.splice(this.X, 0, '🦆');
         }
         if (index > min && index <= max) {
-          el.splice(X, 1);
+          el.splice(this.X, 1);
           el.shift();
           el.push(' ');
-          el.splice(X, 0, '🦆');
+          el.splice(this.X, 0, '🦆');
         }
-        if (index > max && index < FRAME_HEIGHT) {
-          el.splice(X, 1);
+        if (index > max && index < this.FRAME_HEIGHT) {
+          el.splice(this.X, 1);
           el.shift();
           el.push('⛰️');
-          el.splice(X, 0, '🦆');
+          el.splice(this.X, 0, '🦆');
           }
         } else {
           if (index >= 0 && index <= min) {
@@ -175,49 +157,50 @@ const terminalDuck = () => {
               el.shift();
               el.push(' ');
           } 
-          if (index > max && index < FRAME_HEIGHT) {
+          if (index > max && index < this.FRAME_HEIGHT) {
             el.shift();
             el.push('⛰️');
           }
       }
       return el;
     });
-    collision();
-    frame = nextFrame;
-    printFrame();
-    SCORE++;
+    this.collision();
+    this.FRAME = nextFrame;
+    this.printFrame();
+    this.SCORE++;
     // accelerateFR();
   }
 
-  const swapRight = () => {
-    PREV_X = frame[Y][X + 1];
-    frame[Y][X + 1] = '🦆';
-    frame[Y][X] = PREV_X;
-    printFrame();
-    X++
+  swapRight() {
+    this.PREV_X= this.FRAME[this.Y][this.X + 1];
+    this.FRAME[this.Y][this.X + 1] = '🦆';
+    this.FRAME[this.Y][this.X] = PREV_X;
+    this.printFrame();
+    this.X++
   }
 
-  const swapLeft = () => {
-    PREV_X = frame[Y][X - 1];
-    frame[Y][X - 1] = '🦆';
-    frame[Y][X] = PREV_X;
-    printFrame();
-    X--;
+  swapLeft() {
+    this.PREV_X= this.FRAME[this.Y][this.X - 1];
+    this.FRAME[this.Y][this.X - 1] = '🦆';
+    this.FRAME[this.Y][this.X] = PREV_X;
+    this.printFrame();
+    this.X--;
   }
 
-  const printFrame = () => {
+  printFrame() {
     clear();
     console.log('');
-    frame.forEach((line) => {
+    this.FRAME.forEach((line) => {
       console.log(line.join(''));
     });
-    collision();
-    console.log('score: ' + SCORE);
+    this.collision();
+    console.log('score: ' + this.SCORE);
   }
 
-  setInterval(run, GAME_SPEED);
-  setInterval(moveDown, FALL_SPEED);
+  initialize() {
+    setInterval(this.run, this.GAME_SPEED);
+    setInterval(this.moveDown, this.FALL_SPEED);
+  }
 }
 
-module.exports = terminalDuck;
-
+module.exports = TerminalDuck;

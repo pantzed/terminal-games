@@ -2,9 +2,12 @@
 'use strict'; 
 
 
-const terminalDuck = require('./games/terminalDuck');
+const TerminalDuck = require('./games/terminalDuck');
 const commander = require('commander');
 const inquirer = require('inquirer');
+
+// Move controls out and import into runGame
+// Make terminal duck into an object that is passed to run game
 
 
 const program = commander;
@@ -20,7 +23,8 @@ program.command('terminal-duck').action(() => {
       }
     ]).then((response) => {
       if (response.play) {
-        terminalDuck();
+        let duck = new TerminalDuck;
+        duck.initialize();
       }
     });
 });
