@@ -9,7 +9,7 @@ const rl = require('readline');
 const terminalDuck = () => {
   
   process.stdin.setRawMode(true);
-  process.stdin.resume()
+  process.stdin.resume();
   rl.emitKeypressEvents(process.stdin);
   process.stdin.on('keypress', (str, key) => {
     switch(key.name) {
