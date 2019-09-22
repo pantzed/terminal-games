@@ -189,13 +189,13 @@ class TerminalDuck {
   }
 
   printFrame() {
-    clear();
-    console.log('');
     let strFrame = '';
     this.FRAME.forEach((line) => {
       strFrame += line.join('');
       strFrame += '\n';
     });
+    clear();
+    console.log('');
     console.log(strFrame);
     this.collision();
     console.log('score: ' + this.SCORE);

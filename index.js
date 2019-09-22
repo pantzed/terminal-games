@@ -5,9 +5,7 @@
 const TerminalDuck = require('./games/terminalDuck');
 const commander = require('commander');
 const inquirer = require('inquirer');
-
-// Move controls out and import into runGame
-// Make terminal duck into an object that is passed to run game
+const chalk = require('chalk');
 
 
 const program = commander;
@@ -19,7 +17,7 @@ program.command('terminal-duck').action(() => {
       {
         name: 'play',
         type: 'confirm',
-        message: 'Would you like to play Terminal Duck'
+        message: chalk.cyan('Would you like to play Terminal Duck?')
       }
     ]).then((response) => {
       if (response.play) {
