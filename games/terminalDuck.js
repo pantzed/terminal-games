@@ -4,6 +4,7 @@
 
 const clear = require('clear');
 const gameConfig = require('../config.json');
+const rl = require('readline');
 
 class TerminalDuck {
   constructor() {
@@ -124,8 +125,8 @@ class TerminalDuck {
     }
   }
 
-  run() {
-    let nextEnv = this.blankHeightPos();
+  run(env) {
+    let nextEnv = env;
     let min = nextEnv[0];
     let max = nextEnv[1];
     let nextFrame = this.FRAME.map((el, index) => {
@@ -174,7 +175,7 @@ class TerminalDuck {
   swapRight() {
     this.PREV_X= this.FRAME[this.Y][this.X + 1];
     this.FRAME[this.Y][this.X + 1] = '🦆';
-    this.FRAME[this.Y][this.X] = PREV_X;
+    this.FRAME[this.Y][this.X] = this.PREV_X;
     this.printFrame();
     this.X++
   }
@@ -182,7 +183,7 @@ class TerminalDuck {
   swapLeft() {
     this.PREV_X= this.FRAME[this.Y][this.X - 1];
     this.FRAME[this.Y][this.X - 1] = '🦆';
-    this.FRAME[this.Y][this.X] = PREV_X;
+    this.FRAME[this.Y][this.X] = this.PREV_X;
     this.printFrame();
     this.X--;
   }
@@ -198,8 +199,26 @@ class TerminalDuck {
   }
 
   initialize() {
-    setInterval(this.run, this.GAME_SPEED);
-    setInterval(this.moveDown, this.FALL_SPEED);
+    process.stdin.setRawMode(true);
+  process.stdin.resume();
+  rl.emitKeypressEvents(process.stdin);
+  process.stdin.on('keypress', (str, key) => {
+    switch(key.name) {
+      case 'q': process.exit(0); break;
+      case 'right': this.swapRight(); break;
+      case 'left': this.swapLeft(); break;
+      case 'up': this.moveUp(); break;
+      case 'down': this.moveDown(); break;
+      default: break;
+    }
+  });
+    setInterval(() => {
+      let nextEnv = this.blankHeightPos();
+      this.run(nextEnv);
+    }, this.GAME_SPEED);
+    setInterval(() => {
+      this.moveDown();
+     }, this.FALL_SPEED);
   }
 }
 
