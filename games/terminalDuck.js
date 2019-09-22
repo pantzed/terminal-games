@@ -191,27 +191,30 @@ class TerminalDuck {
   printFrame() {
     clear();
     console.log('');
+    let strFrame = '';
     this.FRAME.forEach((line) => {
-      console.log(line.join(''));
+      strFrame += line.join('');
+      strFrame += '\n';
     });
+    console.log(strFrame);
     this.collision();
     console.log('score: ' + this.SCORE);
   }
 
   initialize() {
     process.stdin.setRawMode(true);
-  process.stdin.resume();
-  rl.emitKeypressEvents(process.stdin);
-  process.stdin.on('keypress', (str, key) => {
-    switch(key.name) {
-      case 'q': process.exit(0); break;
-      case 'right': this.swapRight(); break;
-      case 'left': this.swapLeft(); break;
-      case 'up': this.moveUp(); break;
-      case 'down': this.moveDown(); break;
-      default: break;
-    }
-  });
+    process.stdin.resume();
+    rl.emitKeypressEvents(process.stdin);
+    process.stdin.on('keypress', (str, key) => {
+      switch(key.name) {
+        case 'q': process.exit(0); break;
+        case 'right': this.swapRight(); break;
+        case 'left': this.swapLeft(); break;
+        case 'up': this.moveUp(); break;
+        case 'down': this.moveDown(); break;
+        default: break;
+      }
+    });
     setInterval(() => {
       let nextEnv = this.blankHeightPos();
       this.run(nextEnv);
