@@ -2,13 +2,19 @@
 
 /* eslint-env node */
 
+/**
+ * TODO:
+ * - Improve collision method
+ * - Pass config to constructor?
+ * - 
+ */
+
 const clear = require('clear');
 const gameConfig = require('../config.json');
 const rl = require('readline');
 
 class TerminalDuck {
   constructor() {
-
     this.DUCK = gameConfig.environment.duck;
     this.SKY = gameConfig.environment.sky;
     this.GROUND = gameConfig.environment.ground;
