@@ -6,12 +6,15 @@
  * TODO:
  * - Improve collision method
  * - Pass config to constructor?
- * - 
+ * - Save scores
+ * - make initislize promise based
+ * - queue frames?
  */
 
 const clear = require('clear');
 const gameConfig = require('../config.json');
 const rl = require('readline');
+const { execSync } = require('child_process');
 
 class TerminalDuck {
   constructor() {
@@ -83,21 +86,8 @@ class TerminalDuck {
     return [nextBlankMin, nextBlankMax];
   }
 
-  collision() {
-    if (this.FRAME[this.Y][this.X+1] !== ' ' && this.FRAME[this.Y][this.X+1] !== '🦆'){
-      this.FRAME[this.Y][this.X] = '💥';
-      clear();
-      console.log('');
-      this.FRAME.forEach((line) => {
-        console.log(line.join(''));
-      });
-      console.log('Murderer.');
-      console.log('Final score:', this.SCORE);
-      process.exit(1);
-    }
-  }
-
   moveUp() {
+    this.crashY(this.Y-1);
     let prevY = this.Y;
     if (this.Y - 1 >= 0){
       this.Y--;
@@ -106,10 +96,11 @@ class TerminalDuck {
     }
     this.FRAME[this.Y][this.X] = '🦆';
     this.FRAME[prevY][this.X] = ' ';
-    this.printFrame('up');
+    this.printFrame();
   }
 
   moveDown() {
+    this.crashY(this.Y+1);
     let prevY = this.Y;
     if (this.Y < this.FRAME_HEIGHT) {
       this.Y++;
@@ -118,7 +109,7 @@ class TerminalDuck {
     }
     this.FRAME[this.Y][this.X] = '🦆';
     this.FRAME[prevY][this.X] = ' ';
-    this.printFrame('down');
+    this.printFrame();
   }
 
   getRandom() {
@@ -131,6 +122,35 @@ class TerminalDuck {
     }
   }
 
+  crashX(next) {
+    if (this.FRAME[this.Y][next] !== ' ') {
+      this.FRAME[this.Y][this.X] = '💥';
+      clear();
+      console.log('');
+      this.FRAME.forEach((line) => {
+        console.log(line.join(''));
+      });
+      console.log('Murderer.');
+      console.log('Final score:', this.SCORE);
+      process.exit(0);
+    }
+  }
+
+  crashY(next) {
+    if (this.FRAME[next][this.X] !== ' ') {
+      this.FRAME[next][this.X] = '💥';
+      this.FRAME[this.Y][this.X] = ' ';
+      clear();
+      console.log('');
+      this.FRAME.forEach((line) => {
+        console.log(line.join(''));
+      });
+      console.log('Murderer.');
+      console.log('Final score:', this.SCORE);
+      process.exit(0);
+    }
+  }
+
   run(env) {
     let nextEnv = env;
     let min = nextEnv[0];
@@ -138,18 +158,21 @@ class TerminalDuck {
     let nextFrame = this.FRAME.map((el, index) => {
       if (index === this.Y) {
         if (index >= 0 && index <= min) {
+          this.crashX(this.X+1);
           el.splice(this.X, 1);
           el.shift();
           el.push('☁️');
           el.splice(this.X, 0, '🦆');
         }
         if (index > min && index <= max) {
+          this.crashX(this.X+1);
           el.splice(this.X, 1);
           el.shift();
           el.push(' ');
           el.splice(this.X, 0, '🦆');
         }
         if (index > max && index < this.FRAME_HEIGHT) {
+          this.crashX(this.X+1);
           el.splice(this.X, 1);
           el.shift();
           el.push('⛰️');
@@ -171,7 +194,7 @@ class TerminalDuck {
       }
       return el;
     });
-    this.collision();
+    // this.collision(min, max);
     this.FRAME = nextFrame;
     this.printFrame();
     this.SCORE++;
@@ -179,6 +202,7 @@ class TerminalDuck {
   }
 
   swapRight() {
+    this.crashX(this.X+1);
     this.PREV_X= this.FRAME[this.Y][this.X + 1];
     this.FRAME[this.Y][this.X + 1] = '🦆';
     this.FRAME[this.Y][this.X] = this.PREV_X;
@@ -187,6 +211,7 @@ class TerminalDuck {
   }
 
   swapLeft() {
+    this.crashX(this.X-1);
     this.PREV_X= this.FRAME[this.Y][this.X - 1];
     this.FRAME[this.Y][this.X - 1] = '🦆';
     this.FRAME[this.Y][this.X] = this.PREV_X;
@@ -200,10 +225,10 @@ class TerminalDuck {
       strFrame += line.join('');
       strFrame += '\n';
     });
-    clear();
+    rl.cursorTo(process.stdout, 0, 0);
+    rl.clearScreenDown(process.stdout);
     console.log('');
     console.log(strFrame);
-    this.collision();
     console.log('score: ' + this.SCORE);
   }
 
