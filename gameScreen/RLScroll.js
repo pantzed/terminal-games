@@ -18,7 +18,11 @@ class RLScroll {
     this._buffer = new ScreenBuffer({height: this.height, width: this.width, dst: this.term});
     //
     this.updateCoords = this.updateCoords.bind(this);
-
+    this.exclusion = this.exclusion.bind(this);
+    this.intersectUpdate = this.intersectUpdate.bind(this);
+    this.putNewValues = this.putNewValues.bind(this);
+    this.update = this.update.bind(this);
+    this.run = this.run.bind(this);
   }
   
   updateCoords(arr, next) {
