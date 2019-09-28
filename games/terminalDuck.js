@@ -14,7 +14,6 @@
 const clear = require('clear');
 const gameConfig = require('../config.json');
 const rl = require('readline');
-const { execSync } = require('child_process');
 
 class TerminalDuck {
   constructor() {
@@ -94,7 +93,7 @@ class TerminalDuck {
     } else {
       return;
     }
-    this.FRAME[this.Y][this.X] = '🦆';
+    this.FRAME[this.Y].splice(this.X, 1, '🦆');
     this.FRAME[prevY][this.X] = ' ';
     this.printFrame();
   }
@@ -107,7 +106,7 @@ class TerminalDuck {
     } else {
       return;
     }
-    this.FRAME[this.Y][this.X] = '🦆';
+    this.FRAME[this.Y].splice(this.X, 1, '🦆');
     this.FRAME[prevY][this.X] = ' ';
     this.printFrame();
   }
