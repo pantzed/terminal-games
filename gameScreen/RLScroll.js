@@ -3,7 +3,6 @@
 /* eslint-env node */
 
 
-const _ = require('lodash');
 const term = require('terminal-kit').terminal;
 const ScreenBuffer = require('terminal-kit').ScreenBuffer;
 
