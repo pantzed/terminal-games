@@ -12,6 +12,7 @@ class TerminalDuck {
     this.controls = ulrd;
     this.currPos = {x: 7, y: 7};
     this.playerChar = '🦆';
+    this.crashChar = '💥';
     this.upAction = this.upAction.bind(this);
     this.downAction = this.downAction.bind(this);
     this.leftAction = this.leftAction.bind(this);
@@ -22,7 +23,8 @@ class TerminalDuck {
   checkForCollision() {
     let charInNextPos = this.Screen.screen.get(this.currPos).char;
     if (charInNextPos !== ' ') {
-      this.Screen.term.clear();
+      this.Screen.screen.put(this.currPos, this.crashChar);
+      this.Screen.screen.draw();
       console.log('You Crashed!');
       process.exit(0)
     }
