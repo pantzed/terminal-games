@@ -3,6 +3,7 @@
 /* eslint-env node */
 
 const rl = require('readline');
+const term = require('terminal-kit').terminal;
 
 function udlr(up, down, left, right) {
   process.stdin.setRawMode(true);
@@ -10,7 +11,7 @@ function udlr(up, down, left, right) {
   rl.emitKeypressEvents(process.stdin);
   process.stdin.on('keypress', (str, key) => {
     switch(key.name) {
-      case 'q': process.exit(0); break;
+      case 'q': term.clear(); process.exit(0); break;
       case 'right': right; break;
       case 'left': left; break;
       case 'up': up; break;

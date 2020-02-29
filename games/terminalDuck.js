@@ -52,12 +52,13 @@ class TerminalDuck {
 
   initializeFrame() {
       let startFrame = [];
-        for (let j=0; j<this.frameWidth; j++) {
-          let top = 0;
-          let bottom = this.frameHeight;
-          startFrame.push({x:top, y:i, char: '*'});
-          startFrame.push({x:bottom, y:i, char: '*'});
-        }
+      for (let j=0; j<this.frameWidth; j++) {
+        let top = 0;
+        let bottom = this.frameHeight;
+        startFrame.push({x:top, y:i, char: '*'});
+        startFrame.push({x:bottom, y:i, char: '*'});
+      }
+      
   }
 
   run() {

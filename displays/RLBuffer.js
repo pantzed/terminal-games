@@ -9,18 +9,20 @@ const ScreenBuffer = require('terminal-kit').ScreenBuffer;
 
 /**
  * LR Buffer provides a randomized environment that scrolls left to right
- * 
  */
+
 class RLBuffer {
-  constructor(props) {
-    this.sHeight = 15;
-    this.sWidth = 50;
+  constructor(props = {}) {
+    this.sHeight = props.height ? props.height : 15;
+    this.sWidth = props.width ? props.width : 50;
     this.screen = new ScreenBuffer({height: this.sHeight, width: this.sWidth, dst: term});
-    this.values = [];
-    this.spaceStartIndex = 1;
-    this.spaceHeight = this.sHeight - 2;
-    this.top = 1;
-    this.bottom = 1;
+    this.values = props.values ? props.values : [];
+    this.spaceStartIndex = props.spaceStartIndex ? props.spaceStartIndex : 1;
+    this.spaceHeight = props.spaceHeight ? this.props.spaceHeight : this.sHeight - 2;
+    this.top = props.top ? props.top : 1;
+    this.bottom = props.bottom ? props.bottom : 1;
+    this.playerChar = props.playerChar ? props.playerChar : "@";
+    this.playerPos = props.playerPos ? props.playerChar : { x: Math.floor(this.height/2), y: 7, char: this.playerChar };
   };
 
 initialSetup() {
@@ -173,7 +175,7 @@ initialize() {
     this.run();
     }, 500);
   }
+
 }
 
-const gameBuffer = new RLBuffer();
-gameBuffer.initialize();
+module.exports = RLBuffer;
