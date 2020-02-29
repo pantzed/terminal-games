@@ -80,8 +80,8 @@ class RLScroll {
     });
   }
   
-  update() {
-    let nextEnv = updateCoords(this.frame);
+  update(randomizer) {
+    let nextEnv = updateCoords(this.frame, randomizer);
     let diffValues = exclusion(this.frame, nextEnv);
     this.putNewValues(diffValues);
     this.frame = intersectUpdate(this.frame, diffValues);
@@ -94,4 +94,4 @@ class RLScroll {
 
 }
 
-export default RLScroll;
+module.exports = RLScroll;

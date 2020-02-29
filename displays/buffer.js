@@ -13,6 +13,10 @@ const sWidth = 50;
 let screen = new ScreenBuffer({height: sHeight, width: sWidth, dst: term});
 
 let values = [];
+let spaceStartIndex = 1;
+let spaceHeight = sHeight - 2;
+let top = 1;
+let bottom = 1;
 
 //setup
 for (let i=0; i<sHeight; i++) {
@@ -20,7 +24,7 @@ for (let i=0; i<sHeight; i++) {
     if (i === 0 || i === sHeight - 1) {
       values.push({x:j, y:i, char: '*'});
     } else {
-      values.push({x:j, y:i, char: j.toString()});
+      values.push({x:j, y:i, char: ' '});
     }
   }
 }
@@ -29,12 +33,62 @@ values.forEach((value) => {
   screen.put({x: value.x, y:value.y}, value.char);
 });
 
+function getChangeValue() {
+  let flip = Math.ceil(Math.random() * 3);
+  switch (flip) {
+    case 1: return 1;
+    case 2: return -1;
+    case 3: return 0;
+    default: break;
+  }
+}
+
+function doMathForHeight(env, change) {
+  let maxHeight = Math.round(sHeight/2) - 2;
+  let nextHeight = env + change;
+  nextHeight = nextHeight < 1 ? 1 : nextHeight;
+  nextHeight = nextHeight >= maxHeight ? maxHeight : nextHeight;
+  return nextHeight;
+}
+
+function changeSpaceStartIndex(curr, change) {
+  let nextStartIndex = curr + change;
+  nextStartIndex = nextStartIndex < 1 ? 1 : nextStartIndex;
+  nextStartIndex = nextStartIndex > sHeight - 6 ? sHeight - 6 : nextStartIndex;
+  return nextStartIndex;
+}
+
+function changeSpaceHeight(curr, change) {
+  let nextHeight = curr + change;
+  nextHeight = nextHeight > sHeight + spaceHeight - 2 ? sHeight + spaceHeight - 2 : nextHeight;
+  nextHeight = nextHeight < 4 ? 4 : nextHeight;
+  return nextHeight;
+}
+
+function setSpaceHeight() {
+  spaceHeight = changeSpaceHeight(spaceHeight, getChangeValue());
+}
+
+function setSpaceStartIndex() {
+  spaceStartIndex = changeSpaceStartIndex(spaceStartIndex, getChangeValue());
+}
+
+// The randomizer needs to set the space height and starting point
+// and not exceed the bounds of the screen height, top and bottom are then filled accordingly
+
 function randomizeNewEnv() {
   let nextEnv = [];
-  let rand = Math.ceil(Math.random()*5);
+  setSpaceHeight(); //must come first
+  setSpaceStartIndex();
+  if (spaceHeight + spaceStartIndex >= sHeight -1) {
+    spaceHeight--;
+  }
   for (let i=0; i < sHeight; i++) {
-    if (i <= rand) {
+    if (i < spaceStartIndex) {
       nextEnv.push({x: sWidth-1, y: i, char: '&'})
+    }
+    else if (i >= spaceStartIndex + spaceHeight) {
+      nextEnv.push({x: sWidth-1, y: i, char: '$'})
     } else {
       nextEnv.push({x: sWidth-1, y: i, char: ' '});
     }

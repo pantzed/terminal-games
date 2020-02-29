@@ -9,11 +9,14 @@
  * - Save scores
  * - make initislize promise based
  * - queue frames?
+ * - Create virtual frame to be printed using an array of coordinates
+ * 
  */
 
 const clear = require('clear');
 const gameConfig = require('../config.json');
 const rl = require('readline');
+const GameScreen = require('../gameScreen/RLScroll');
 
 class TerminalDuck {
   constructor() {
@@ -23,10 +26,8 @@ class TerminalDuck {
     this.X = gameConfig.game.start.position.x;
     this.PREV_X= gameConfig.game.start.position.x;
     this.Y = gameConfig.game.start.position.y;
-    this.FRAME_HEIGHT = gameConfig.environment.frameHeight;
-    this.FRAME_LENGTH = gameConfig.environment.frameLength;
 
-    this.PREV_BLANK_MAX = gameConfig.environment.initialSpace.maxIndex || this.FRAME_HEIGHT - 1;
+    this.PREV_BLANK_MAX = gameConfig.environment.initialSpace.maxIndex || this.frameHeight - 1;
     this.PREV_BLANK_MIN = gameConfig.environment.initialSpace.minIndex || 1;
 
     this.GAME_DIFFICULTY = 'medium';
@@ -35,8 +36,36 @@ class TerminalDuck {
 
     this.SCORE = 0;
 
-    this.FRAME = this.createInitialFrame(this.FRAME_HEIGHT, this.FRAME_LENGTH);
+    this.FRAME = this.createInitialFrame(this.frameHeight, this.frameWidth);
+    this.COORDS = []; //el {x: int, y: int, val: 'str'}
+    //
+    this.frameHeight = gameConfig.environment.frameHeight;
+    this.frameWidth = gameConfig.environment.frameLength;
+    this.screen = new GameScreen({height: this.frameHeight, width: this.frameWidth, frameRate: 500});
+    this.frame = screen.frame;
   }
+
+  // Needs:
+  // randomizer -> passed to this.screen.update(this.frame, this.randomizer)
+  // duck placer
+  // 
+
+  initializeFrame() {
+      let startFrame = [];
+        for (let j=0; j<this.frameWidth; j++) {
+          let top = 0;
+          let bottom = this.frameHeight;
+          startFrame.push({x:top, y:i, char: '*'});
+          startFrame.push({x:bottom, y:i, char: '*'});
+        }
+  }
+
+  run() {
+    setInterval(this.screen.update, this.screen.frameRate);
+  }
+
+
+  // -------------------------//
 
   createInitialFrame(height, width) {
     let initialFrame = [];
@@ -65,17 +94,17 @@ class TerminalDuck {
     if (nextBlankMin <= 1) {
       nextBlankMin = 1;
     }
-    if (nextBlankMin > this.FRAME_HEIGHT - 5) {
-      nextBlankMin = this.FRAME_HEIGHT - 5;
+    if (nextBlankMin > this.frameHeight - 5) {
+      nextBlankMin = this.frameHeight - 5;
     }
     let nextBlankMax = this.getRandom() + this.PREV_BLANK_MAX;
     //check that max is greater than min by at least 3
     if (nextBlankMin + 3 >= nextBlankMax){
       nextBlankMax = nextBlankMin + 3;
     }
-    // check that max is never equal or greater to this.FRAME_HEIGHT
-    if (nextBlankMax >= this.FRAME_HEIGHT - 2) {
-      nextBlankMax = this.FRAME_HEIGHT - 2;
+    // check that max is never equal or greater to this.frameHeight
+    if (nextBlankMax >= this.frameHeight - 2) {
+      nextBlankMax = this.frameHeight - 2;
       if (nextBlankMin + 3 >= nextBlankMax){
         nextBlankMin--;
       }
@@ -101,7 +130,7 @@ class TerminalDuck {
   moveDown() {
     this.crashY(this.Y+1);
     let prevY = this.Y;
-    if (this.Y < this.FRAME_HEIGHT) {
+    if (this.Y < this.frameHeight) {
       this.Y++;
     } else {
       return;
@@ -170,7 +199,7 @@ class TerminalDuck {
           el.push(' ');
           el.splice(this.X, 0, '🦆');
         }
-        if (index > max && index < this.FRAME_HEIGHT) {
+        if (index > max && index < this.frameHeight) {
           this.crashX(this.X+1);
           el.splice(this.X, 1);
           el.shift();
@@ -186,7 +215,7 @@ class TerminalDuck {
               el.shift();
               el.push(' ');
           } 
-          if (index > max && index < this.FRAME_HEIGHT) {
+          if (index > max && index < this.frameHeight) {
             el.shift();
             el.push('⛰️');
           }
