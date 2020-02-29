@@ -5,14 +5,19 @@ const cli = require('./interface/index');
 const udlr = require('./controls/UDLR');
 const RLBuffer = require('./displays/RLBuffer');
 const TerminalDuck = require('./games/TD2.js');
-const commander = require('commander');
-const inquirer = require('inquirer');
-const chalk = require('chalk');
 
-/** 
- * Runs the cli when package is initialized
- */
-cli();
+class TerminalGames {
+  constructor() {
+    this.controllers = { udlr: udlr };
+    this.displays = { RLBuffer: RLBuffer };
+    this.games = { TerminalDuck: TerminalDuck };
+    this.interfaces = {cli: cli};
+  }
+
+}
+
+const RunTerminalGames = new TerminalGames();
+RunTerminalGames.interfaces.cli();
 
 /** 
  * Named Exports
@@ -27,9 +32,4 @@ exports = {
 /** 
  * Default export
  */
-module.exports = {
-  cli,
-  udlr,
-  RLBuffer,
-  TerminalDuck
-};
+module.exports = TerminalGames;
