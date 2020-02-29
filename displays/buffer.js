@@ -7,33 +7,41 @@ const _ = require('lodash');
 const term = require('terminal-kit').terminal;
 const ScreenBuffer = require('terminal-kit').ScreenBuffer;
 
-const sHeight = 15;
-const sWidth = 50;
+class LRBuffer {
+  constructor(props) {
+    this.sHeight = 15;
+    this.sWidth = 50;
 
-let screen = new ScreenBuffer({height: sHeight, width: sWidth, dst: term});
+    this.screen = new ScreenBuffer({height: this.sHeight, width: this.sWidth, dst: term});
 
-let values = [];
-let spaceStartIndex = 1;
-let spaceHeight = sHeight - 2;
-let top = 1;
-let bottom = 1;
+    this.values = [];
+    this.spaceStartIndex = 1;
+    this.spaceHeight = this.sHeight - 2;
+    this.top = 1;
+    this.bottom = 1;
+    this.initialSetup();
+  };
 
-//setup
-for (let i=0; i<sHeight; i++) {
-  for (let j=0; j<sWidth; j++) {
-    if (i === 0 || i === sHeight - 1) {
-      values.push({x:j, y:i, char: '*'});
-    } else {
-      values.push({x:j, y:i, char: ' '});
+// setup initial env
+initialSetup() {
+  for (let i=0; i<this.sHeight; i++) {
+    for (let j=0; j<this.sWidth; j++) {
+      if (i === 0 || i === this.sHeight - 1) {
+        this.values.push({x:j, y:i, char: '*'});
+      } else {
+        this.values.push({x:j, y:i, char: ' '});
+      }
     }
   }
+  this.values.forEach((value) => {
+    this.screen.put({x: value.x, y:value.y}, value.char);
+  });
 }
 
-values.forEach((value) => {
-  screen.put({x: value.x, y:value.y}, value.char);
-});
 
-function getChangeValue() {
+
+
+getChangeValue() {
   let flip = Math.ceil(Math.random() * 3);
   switch (flip) {
     case 1: return 1;
@@ -43,68 +51,60 @@ function getChangeValue() {
   }
 }
 
-function doMathForHeight(env, change) {
-  let maxHeight = Math.round(sHeight/2) - 2;
-  let nextHeight = env + change;
-  nextHeight = nextHeight < 1 ? 1 : nextHeight;
-  nextHeight = nextHeight >= maxHeight ? maxHeight : nextHeight;
-  return nextHeight;
-}
-
-function changeSpaceStartIndex(curr, change) {
+changeSpaceStartIndex(curr, change) {
   let nextStartIndex = curr + change;
   nextStartIndex = nextStartIndex < 1 ? 1 : nextStartIndex;
-  nextStartIndex = nextStartIndex > sHeight - 6 ? sHeight - 6 : nextStartIndex;
+  nextStartIndex = nextStartIndex > this.sHeight - 6 ? this.sHeight - 6 : nextStartIndex;
   return nextStartIndex;
 }
 
-function changeSpaceHeight(curr, change) {
+changeSpaceHeight(curr, change) {
   let nextHeight = curr + change;
-  nextHeight = nextHeight > sHeight + spaceHeight - 2 ? sHeight + spaceHeight - 2 : nextHeight;
+  nextHeight = nextHeight > this.sHeight + this.spaceHeight - 2 ? this.sHeight + this.spaceHeight - 2 : nextHeight;
   nextHeight = nextHeight < 4 ? 4 : nextHeight;
   return nextHeight;
 }
 
-function setSpaceHeight() {
-  spaceHeight = changeSpaceHeight(spaceHeight, getChangeValue());
+setSpaceHeight() {
+  this.spaceHeight = this.changeSpaceHeight(this.spaceHeight, this.getChangeValue());
 }
 
-function setSpaceStartIndex() {
-  spaceStartIndex = changeSpaceStartIndex(spaceStartIndex, getChangeValue());
+setSpaceStartIndex() {
+  this.spaceStartIndex = this.changeSpaceStartIndex(this.spaceStartIndex, this.getChangeValue());
 }
 
 // The randomizer needs to set the space height and starting point
 // and not exceed the bounds of the screen height, top and bottom are then filled accordingly
 
-function randomizeNewEnv() {
+randomizeNewEnv() {
   let nextEnv = [];
-  setSpaceHeight(); //must come first
-  setSpaceStartIndex();
-  if (spaceHeight + spaceStartIndex >= sHeight -1) {
-    spaceHeight--;
+  this.setSpaceHeight(); //must come first
+  this.setSpaceStartIndex();
+  if (this.spaceHeight + this.spaceStartIndex >= this.sHeight -1) {
+    this.spaceHeight--;
   }
-  for (let i=0; i < sHeight; i++) {
-    if (i < spaceStartIndex) {
-      nextEnv.push({x: sWidth-1, y: i, char: '&'})
+  for (let i=0; i < this.sHeight; i++) {
+    if (i < this.spaceStartIndex) {
+      nextEnv.push({x: this.sWidth-1, y: i, char: '&'})
     }
-    else if (i >= spaceStartIndex + spaceHeight) {
-      nextEnv.push({x: sWidth-1, y: i, char: '$'})
+    else if (i >= this.spaceStartIndex + this.spaceHeight) {
+      nextEnv.push({x: this.sWidth-1, y: i, char: '$'})
     } else {
-      nextEnv.push({x: sWidth-1, y: i, char: ' '});
+      nextEnv.push({x: this.sWidth-1, y: i, char: ' '});
     }
   }
   return nextEnv;
 }
 
-function updateCoords(arr) {
+updateCoords(arr) {
   let nextValues = [];
-  let nextEnv = randomizeNewEnv();
+  let nextEnv = this.randomizeNewEnv();
   arr.forEach((el) => {
     let nextX = el.x - 1;
     if (nextX < 0) {
       return;
     }
-    else if (el.x === sWidth - 1) {
+    else if (el.x === this.sWidth - 1) {
       nextValues.push({x: nextX, y: el.y, char: el.char});
       nextValues.push(nextEnv.shift());
     }
@@ -117,7 +117,7 @@ function updateCoords(arr) {
   return nextValues;
 }
 
-function diff(arr1, arr2) {
+diff(arr1, arr2) {
   let difference = [];
   for(let i=0; i<arr1.length; i++) {
     let a = arr1[i];
@@ -132,7 +132,7 @@ function diff(arr1, arr2) {
   return difference;
 }
 
-function same(arr1, arr2) {
+same(arr1, arr2) {
   let combined = [...arr1];
   for (let i=0; i<combined.length; i++) {
     let a = combined[i];
@@ -146,24 +146,26 @@ function same(arr1, arr2) {
   return combined;
 }
 
-function putNewValues(arr) {
+putNewValues(arr) {
   arr.forEach((el) => {
-    screen.put({x: el.x, y:el.y}, el.char);
+    this.screen.put({x: el.x, y:el.y}, el.char);
   });
 }
 
-function run() {
-  let nextEnv = updateCoords(values);
-  let diffValues = diff(values, nextEnv);
-  diffValues.forEach((el) => {
-    screen.put({x: el.x, y:el.y}, el.char);
-  });
-  values = same(values, diffValues);
-  screen.draw();
+run() {
+  term.clear();
+  setInterval(() => {
+    let nextEnv = this.updateCoords(this.values);
+    let diffValues = this.diff(this.values, nextEnv);
+    diffValues.forEach((el) => {
+      this.screen.put({x: el.x, y:el.y}, el.char);
+    });
+    this.values = this.same(this.values, diffValues);
+    this.screen.draw();
+    }, 500)
+  }
+
 }
 
-term.clear();
-setInterval(run, 500);
-// run();
-
-
+const gameBuffer = new LRBuffer();
+gameBuffer.run();
