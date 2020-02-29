@@ -18,5 +18,7 @@ class TerminalDuck {
 
 }
 
-const newTD2 = new TerminalDuck();
-newTD2.runTD2();
+// const newTD2 = new TerminalDuck();
+// newTD2.runTD2();
+
+module.exports = TerminalDuck;

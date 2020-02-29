@@ -16,9 +16,9 @@
   "dependencies": {
     "chalk": "^2.4.2",
     "clear": "^0.1.0",
-    "commander": "^3.0.1",
+    "commander": "^3.0.2",
     "fs": "0.0.1-security",
-    "inquirer": "^7.0.0",
-    "terminal-kit": "^1.31.3"
+    "inquirer": "^7.0.5",
+    "terminal-kit": "^1.33.15"
   }
 }
