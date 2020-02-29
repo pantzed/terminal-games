@@ -13,7 +13,6 @@ class TerminalGames {
     this.games = { TerminalDuck: TerminalDuck };
     this.interfaces = {cli: cli};
   }
-
 }
 
 const RunTerminalGames = new TerminalGames();

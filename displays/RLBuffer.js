@@ -6,6 +6,7 @@
 const _ = require('lodash');
 const term = require('terminal-kit').terminal;
 const ScreenBuffer = require('terminal-kit').ScreenBuffer;
+const udlr = require('../controls/UDLR');
 
 /**
  * LR Buffer provides a randomized environment that scrolls left to right
@@ -15,14 +16,15 @@ class RLBuffer {
   constructor(props = {}) {
     this.sHeight = props.height ? props.height : 15;
     this.sWidth = props.width ? props.width : 50;
-    this.screen = new ScreenBuffer({height: this.sHeight, width: this.sWidth, dst: term});
+    this.term = term;
+    this.screen = new ScreenBuffer({height: this.sHeight, width: this.sWidth, dst: this.term});
     this.values = props.values ? props.values : [];
     this.spaceStartIndex = props.spaceStartIndex ? props.spaceStartIndex : 1;
     this.spaceHeight = props.spaceHeight ? this.props.spaceHeight : this.sHeight - 2;
     this.top = props.top ? props.top : 1;
     this.bottom = props.bottom ? props.bottom : 1;
-    this.playerChar = props.playerChar ? props.playerChar : "@";
-    this.playerPos = props.playerPos ? props.playerChar : { x: Math.floor(this.height/2), y: 7, char: this.playerChar };
+    this.playerChar = props.playerChar ? props.playerChar : "+";
+    this.playerInitial = props.playerInitial ? props.playerInitial : { x: Math.floor(this.sHeight/2), y: 7, char: "+" };
   };
 
 initialSetup() {
@@ -38,6 +40,7 @@ initialSetup() {
   this.values.forEach((value) => {
     this.screen.put({x: value.x, y:value.y}, value.char);
   });
+  this.screen.put({x: this.playerInitial.x, y: this.playerInitial.y}, this.playerInitial.char);
 }
 
 getChangeValue() {
@@ -151,25 +154,27 @@ putNewValues(arr) {
   });
 }
 
-// Hook into run function to modify default placement and control of player icon
-placePlayerIcon(nextEnv) { return };
+// checkForCollision(pos, char) {
+//   if (this.values[pos.y[pos.x]] !== ' ' && this.values[pos.y[pos.x]] !== char) {
+//     this.screen.put({x: pos.x, y: pos.y}, '@');
+//     console.log('You crashed!');
+//     process.exit(0);
+//   }
+// }
 
 run() {
   let nextEnv = this.updateCoords(this.values);
-  this.placePlayerIcon(nextEnv);
   // Find environment differences and put to screen
   let diffValues = this.diff(this.values, nextEnv);
-  diffValues.forEach((el) => {
-    this.screen.put({x: el.x, y:el.y}, el.char);
-  });
-  // Find values that did not change and update only characters that have changed
+  this.putNewValues(diffValues);
+  // Prepare values for next render cycle
   this.values = this.same(this.values, diffValues);
   // Draw updated values
   this.screen.draw();
 }
 
 initialize() {
-  term.clear();
+  this.term.clear();
   this.initialSetup();
   setInterval(() => {
     this.run();
