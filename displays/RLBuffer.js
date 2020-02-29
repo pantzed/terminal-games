@@ -7,22 +7,22 @@ const _ = require('lodash');
 const term = require('terminal-kit').terminal;
 const ScreenBuffer = require('terminal-kit').ScreenBuffer;
 
-class LRBuffer {
+/**
+ * LR Buffer provides a randomized environment that scrolls left to right
+ * 
+ */
+class RLBuffer {
   constructor(props) {
     this.sHeight = 15;
     this.sWidth = 50;
-
     this.screen = new ScreenBuffer({height: this.sHeight, width: this.sWidth, dst: term});
-
     this.values = [];
     this.spaceStartIndex = 1;
     this.spaceHeight = this.sHeight - 2;
     this.top = 1;
     this.bottom = 1;
-    this.initialSetup();
   };
 
-// setup initial env
 initialSetup() {
   for (let i=0; i<this.sHeight; i++) {
     for (let j=0; j<this.sWidth; j++) {
@@ -37,9 +37,6 @@ initialSetup() {
     this.screen.put({x: value.x, y:value.y}, value.char);
   });
 }
-
-
-
 
 getChangeValue() {
   let flip = Math.ceil(Math.random() * 3);
@@ -152,20 +149,31 @@ putNewValues(arr) {
   });
 }
 
-run() {
-  term.clear();
-  setInterval(() => {
-    let nextEnv = this.updateCoords(this.values);
-    let diffValues = this.diff(this.values, nextEnv);
-    diffValues.forEach((el) => {
-      this.screen.put({x: el.x, y:el.y}, el.char);
-    });
-    this.values = this.same(this.values, diffValues);
-    this.screen.draw();
-    }, 500)
-  }
+// Hook into run function to modify default placement and control of player icon
+placePlayerIcon(nextEnv) { return };
 
+run() {
+  let nextEnv = this.updateCoords(this.values);
+  this.placePlayerIcon(nextEnv);
+  // Find environment differences and put to screen
+  let diffValues = this.diff(this.values, nextEnv);
+  diffValues.forEach((el) => {
+    this.screen.put({x: el.x, y:el.y}, el.char);
+  });
+  // Find values that did not change and update only characters that have changed
+  this.values = this.same(this.values, diffValues);
+  // Draw updated values
+  this.screen.draw();
 }
 
-const gameBuffer = new LRBuffer();
-gameBuffer.run();
+initialize() {
+  term.clear();
+  this.initialSetup();
+  setInterval(() => {
+    this.run();
+    }, 500);
+  }
+}
+
+const gameBuffer = new RLBuffer();
+gameBuffer.initialize();
