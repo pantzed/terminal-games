@@ -24,7 +24,7 @@ class RLBuffer {
     this.top = props.top ? props.top : 1;
     this.bottom = props.bottom ? props.bottom : 1;
     this.playerChar = props.playerChar ? props.playerChar : "+";
-    this.playerInitial = props.playerInitial ? props.playerInitial : { x: Math.floor(this.sHeight/2), y: 7, char: "+" };
+    this.playerInitial = props.playerInitial ? props.playerInitial : { x: Math.floor(this.sHeight/2), y: 7, char: this.playerChar };
   };
 
 initialSetup() {
@@ -40,7 +40,7 @@ initialSetup() {
   this.values.forEach((value) => {
     this.screen.put({x: value.x, y:value.y}, value.char);
   });
-  this.screen.put({x: this.playerInitial.x, y: this.playerInitial.y}, this.playerInitial.char);
+  this.screen.put({x: this.playerInitial.x, y: this.playerInitial.y}, this.playerChar);
 }
 
 getChangeValue() {

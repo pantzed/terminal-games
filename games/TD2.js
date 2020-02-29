@@ -62,6 +62,7 @@ class TerminalDuck {
 
   runTD2() {
     this.controls(this.upAction, this.downAction, this.leftAction, this.rightAction);
+    this.Screen.playerChar = this.playerChar;
     this.Screen.initialize(this.placePlayerChar);
   }
 
