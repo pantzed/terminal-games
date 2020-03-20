@@ -154,14 +154,6 @@ putNewValues(arr) {
   });
 }
 
-// checkForCollision(pos, char) {
-//   if (this.values[pos.y[pos.x]] !== ' ' && this.values[pos.y[pos.x]] !== char) {
-//     this.screen.put({x: pos.x, y: pos.y}, '@');
-//     console.log('You crashed!');
-//     process.exit(0);
-//   }
-// }
-
 run() {
   let nextEnv = this.updateCoords(this.values);
   // Find environment differences and put to screen
